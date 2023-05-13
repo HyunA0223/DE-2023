@@ -48,7 +48,7 @@ public class IMDBStudent20191003 {
 	public static void main(String[] args) throws Exception
 	{
 		Configuration conf = new Configuration();
-		Job job = new Job(conf, "IMDBStudent");
+		Job job = new Job(conf, "IMDBStudent20191003");
 ​
 		job.setJarByClass(IMDBStudent20191003.class);
 		job.setMapperClass(IMDBMapper.class);
