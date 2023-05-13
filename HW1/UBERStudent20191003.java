@@ -18,15 +18,15 @@ public class UBERStudent20191003 {
     public static class UBERMapper extends Mapper<Object, Text, Text, Text>
     {
 		private Text genreText = new Text();
-        private String[] dayList = {'', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'};
-​        private Text key = new Text();
-        private Text resultText = new Text();
+        	private String[] dayList = {'', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'};
+​        	private Text key = new Text();
+        	private Text resultText = new Text();
 
 
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
 		{
-            ​
-            		String[] line =  value.toString().split(",");
+            
+                    String[] line =  value.toString().split(",");
                     String bNum = line[0];
 
                     String[] datePart = line[1].split("/");
@@ -53,13 +53,13 @@ public class UBERStudent20191003 {
 		public void reduce(Text key, Iterable<Text> values, Context context ) throws IOException, InterruptedException
 		{
             		int vehicles = 0;
-                    int trips = 0;
+                    	int trips = 0;
             		for (Text val : values) {
                 		String[] tav = val.toString().split(",");
-                        trips += Integer.parseInt(tav[0]);
-                        vehicles += Integer.parseInt(tav[1]);
+                        	trips += Integer.parseInt(tav[0]);
+                        	vehicles += Integer.parseInt(tav[1]);
             		}
-                    String result = trips + ",", vehicles;
+                    	String result = trips + ",", vehicles;
             		resultText.set(result);
             		context.write(key, resultText);
 		}
