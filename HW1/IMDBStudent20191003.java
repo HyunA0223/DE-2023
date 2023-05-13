@@ -13,27 +13,18 @@ import org.apache.hadoop.util.GenericOptionsParser;
 public class IMDBStudent20191003 {
 ​
 	public static class IMDBMapper extends Mapper<Object, Text, Text, IntWritable>{
-		private String filename;
 		private Text genreText = new Text();
 ​
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
 		{​
-            		setup(context);
-
             		String[] line =  value.toString().split("::");
-			int len = line.length;
-            		String[] genres = line[len - 1].split("|");
+            		String[] genres = line[2].split("|");
          
             		for (String genre : genres) {
                			genreText.set(genre);
                 		context.write(genreText, 1);
             		}    
 
-		}
-
-		protected void setup( Context contex) throws IOException, InterruptedException 
-		{
-			filename = ((FileSplit) contex.getInputSplit()).getPath().getName();
 		}
 	}
 ​
