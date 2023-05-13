@@ -1,6 +1,6 @@
 import java.io.IOException;
 import java.util.*;
-​
+
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,46 +9,42 @@ import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.lib.output.*;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.w3c.dom.Text;
-import org.apache.hadoop.fs.FSDataInputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.lang.module.Configuration;
 ​
 public class IMDBStudent20191003 {
 ​
-	public static class IMDBMapper extends Mapper<LongWritable, Text, Text, LongWritable>{
+	public static class IMDBMapper extends Mapper<Object, Text, Text, IntWritable>{
 		private String filename;
 		private Text genreText = new Text();
 ​
-		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			StringTokenizer itr = new StringTokenizer(value.toString());
-​
+		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
+		{​
             		setup(context);
 
-            		while (itr.hasMoreTokens()) {
-                		String[] line =  itr.nextToken().split("::");
-               			String[] genres = line[2].split("|");
+            		String[] line =  value.toString().split("::");
+			int len = line.length;
+            		String[] genres = line[len - 1].split("|");
+         
+            		for (String genre : genres) {
+               			genreText.set(genre);
+                		context.write(genreText, 1);
+            		}    
 
-                		for (String genre : genres) {
-					genreText.set(genre);
-                    			context.write(genreText, 1);
-                		}
-           		 }
 		}
-		protected void setup( Context contex) throws IOException, InterruptedException {
+
+		protected void setup( Context contex) throws IOException, InterruptedException 
+		{
 			filename = ((FileSplit) contex.getInputSplit()).getPath().getName();
 		}
 	}
 ​
-	public static class IMDBReducer extends Reducer<Text, LongWritable, Text, LongWritable>
+	public static class IMDBReducer extends Reducer<Text, IntWritable, Text, IntWritable>
 	{
-		private LongWritable sumWritable = new LongWritable();
+		private IntWritable sumWritable = new IntWritable();
 ​
-		public void reduce(Text key, Iterable<LongWritable> values, Context context ) throws IOException, InterruptedException
+		public void reduce(Text key, Iterable<IntWritable> values, Context context ) throws IOException, InterruptedException
 		{
             		long sum = 0;
-            		for (LongWritable val : values) {
+            		for (IntWritable val : values) {
                 		sum += val.get();
             		}
             		sumWritable.set(sum);
@@ -66,7 +62,7 @@ public class IMDBStudent20191003 {
 		job.setReducerClass(IMDBReducer.class);
 ​
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(LongWritable.class);
+		job.setOutputValueClass(IntWritable.class);
 ​
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
