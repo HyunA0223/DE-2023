@@ -22,22 +22,19 @@ public class IMDBStudent20191003 {
 		private Text genreText = new Text();
 ​
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			
 			StringTokenizer itr = new StringTokenizer(value.toString());
 ​
-            setup(context);
+            		setup(context);
 
-            while (itr.hasMoreTokens()) {
-                String[] line =  itr.nextToken().split("::");
-                String[] genres = line[2].split("|");
+            		while (itr.hasMoreTokens()) {
+                		String[] line =  itr.nextToken().split("::");
+               			String[] genres = line[2].split("|");
 
-                for (String genre : genres) {
-                    genreText.set(genre);
-                    context.write(genreText, 1);
-                }
-
-            }
-
+                		for (String genre : genres) {
+					genreText.set(genre);
+                    			context.write(genreText, 1);
+                		}
+           		 }
 		}
 		protected void setup( Context contex) throws IOException, InterruptedException {
 			filename = ((FileSplit) contex.getInputSplit()).getPath().getName();
@@ -50,12 +47,12 @@ public class IMDBStudent20191003 {
 ​
 		public void reduce(Text key, Iterable<LongWritable> values, Context context ) throws IOException, InterruptedException
 		{
-            long sum = 0;
-            for (LongWritable val : values) {
-                sum += val.get();
-            }
-            sumWritable.set(sum);
-            context.write(key, sumWritable);
+            		long sum = 0;
+            		for (LongWritable val : values) {
+                		sum += val.get();
+            		}
+            		sumWritable.set(sum);
+            		context.write(key, sumWritable);
 		}
 	}
 ​
