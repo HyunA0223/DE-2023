@@ -12,7 +12,9 @@ import org.apache.hadoop.util.GenericOptionsParser;
 ​
 public class IMDBStudent20191003 {
 ​
-	public static class IMDBMapper extends Mapper<Object, Text, Text, IntWritable>{
+	public static class IMDBMapper extends Mapper<Object, Text, Text, IntWritable>
+	{
+		private final static IntWritable one = new IntWritable(1);
 		private Text genreText = new Text();
 ​
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
@@ -22,7 +24,7 @@ public class IMDBStudent20191003 {
          
             		for (String genre : genres) {
                			genreText.set(genre);
-                		context.write(genreText, 1);
+                		context.write(genreText, one);
             		}    
 
 		}
@@ -34,7 +36,7 @@ public class IMDBStudent20191003 {
 ​
 		public void reduce(Text key, Iterable<IntWritable> values, Context context ) throws IOException, InterruptedException
 		{
-            		long sum = 0;
+            		int sum = 0;
             		for (IntWritable val : values) {
                 		sum += val.get();
             		}
@@ -60,7 +62,6 @@ public class IMDBStudent20191003 {
 ​
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
-		FileSystem.get(job.getConfiguration()).delete( new Path(args[1]), true);
         
 		job.waitForCompletion(true);
 	}
