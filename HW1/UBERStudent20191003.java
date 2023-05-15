@@ -15,7 +15,7 @@ import java.time.LocalDate;
 
 public class UBERStudent20191003 {
 
-    public static class UBERMapper extends Mapper<Object, Text, Text, Text>
+    public static class UBERStudent20191003Mapper extends Mapper<Object, Text, Text, Text>
     {
 		private Text keyText = new Text();
                 private String[] dayList = {"", "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
@@ -50,7 +50,7 @@ public class UBERStudent20191003 {
 
     }
 ​
-    public static class UBERReducer extends Reducer<Text, Text, Text, Text>
+    public static class UBERStudent20191003Reducer extends Reducer<Text, Text, Text, Text>
     {
                 private Text resultText = new Text();
 ​
@@ -75,9 +75,9 @@ public class UBERStudent20191003 {
 		Job job = new Job(conf, "UBERStudent20191003");
 ​
 		job.setJarByClass(UBERStudent20191003.class);
-		job.setMapperClass(UBERMapper.class);
-	    	job.setCombinerClass(UBERReducer.class);
-		job.setReducerClass(UBERReducer.class);
+		job.setMapperClass(UBERStudent20191003Mapper.class);
+	    	job.setCombinerClass(UBERStudent20191003Reducer.class);
+		job.setReducerClass(UBERStudent20191003Reducer.class);
 ​
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
