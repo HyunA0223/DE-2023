@@ -52,13 +52,14 @@ public class IMDBStudent20191003 {
 ​
 		job.setJarByClass(IMDBStudent20191003.class);
 		job.setMapperClass(IMDBMapper.class);
+		job.setCombinerClass(IMDBReducer.class);
 		job.setReducerClass(IMDBReducer.class);
 ​
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 ​
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setOutputFormatClass(IntWritableOutputFormat.class);
 ​
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
