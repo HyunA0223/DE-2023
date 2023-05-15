@@ -20,13 +20,14 @@ public class IMDBStudent20191003 {
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
 		{​
             		String[] line =  value.toString().split("::");
+			int len = line.length;
             		/*String[] genres = line[2].split("|");
          
             		for (String genre : genres) {
                			genreText.set(genre);
                 		context.write(genreText, one);
             		}*/
-			StringTokenizer str = new StringTokenizer(line[2], "|");
+			StringTokenizer str = new StringTokenizer(line[len - 1], "|");
 			while (str.hasMoreTokens()) {
 				genreText.set(str.nextToken());
 				context.write(genreText, one);
