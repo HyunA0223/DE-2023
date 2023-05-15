@@ -12,7 +12,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 ​
 public class IMDBStudent20191003 {
 ​
-	public static class IMDBMapper extends Mapper<Object, Text, Text, IntWritable>
+	public static class IMDBStudent20191003Mapper extends Mapper<Object, Text, Text, IntWritable>
 	{
 		private final static IntWritable one = new IntWritable(1);
 		private Text genreText = new Text();
@@ -35,7 +35,7 @@ public class IMDBStudent20191003 {
 		}
 	}
 ​
-	public static class IMDBReducer extends Reducer<Text, IntWritable, Text, IntWritable>
+	public static class IMDBStudent20191003Reducer extends Reducer<Text, IntWritable, Text, IntWritable>
 	{
 		private IntWritable sumWritable = new IntWritable();
 ​
@@ -56,9 +56,9 @@ public class IMDBStudent20191003 {
 		Job job = new Job(conf, "IMDBStudent20191003");
 ​
 		job.setJarByClass(IMDBStudent20191003.class);
-		job.setMapperClass(IMDBMapper.class);
-		job.setCombinerClass(IMDBReducer.class);
-		job.setReducerClass(IMDBReducer.class);
+		job.setMapperClass(IMDBIMDBStudent20191003Mapper.class);
+		job.setCombinerClass(IMDBStudent20191003Reducer.class);
+		job.setReducerClass(IMDBStudent20191003Reducer.class);
 ​
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
