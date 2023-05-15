@@ -76,6 +76,7 @@ public class UBERStudent20191003 {
 ​
 		job.setJarByClass(UBERStudent20191003.class);
 		job.setMapperClass(UBERMapper.class);
+	    	job.setCombinerClass(UBERReducer.class);
 		job.setReducerClass(UBERReducer.class);
 ​
 		job.setOutputKeyClass(Text.class);
