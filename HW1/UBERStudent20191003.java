@@ -17,24 +17,27 @@ public class UBERStudent20191003 {
 
     public static class UBERMapper extends Mapper<Object, Text, Text, Text>
     {
-		private Text genreText = new Text();
-        	private String[] dayList = {'', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'};
-​        	private Text key = new Text();
-        	private Text resultText = new Text();
+		private Text keyText = new Text();
+                private String[] dayList = {"", "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
+                private Text key = new Text();
+                private Text resultText = new Text();
 
 
-		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
-		{
-            
+                public void map(Object key, Text value, Context context) throws IOException, InterruptedException
+                {
+
                     String[] line =  value.toString().split(",");
                     String bNum = line[0];
 
                     String[] datePart = line[1].split("/");
-                    LocalDate date = LocalDate.of(datePart[2], datePart[0], datePart[1]);
+                    int year = Integer.parseInt(datePart[2]);
+                    int month = Integer.parseInt(datePart[0]);
+                    int day = Integer.parseInt(datePart[1]);
+                    LocalDate date = LocalDate.of(year, month, day);
                     DayOfWeek dayOfWeek = date.getDayOfWeek();
 
                     String bNumAndDay = bNum + "," + dayList[dayOfWeek.getValue()];
-                    key.set(bNumAndDay);
+                    keyText.set(bNumAndDay);
 
                     int vehicles = Integer.parseInt(line[2]);
                     int trips = Integer.parseInt(line[3]);
@@ -42,28 +45,29 @@ public class UBERStudent20191003 {
                     String tripAndVehicle = trips + "," + vehicles;
                     resultText.set(tripAndVehicle);
 
+                    context.write(keyText, resultText);
+                }
+
+    }
+​
+    public static class UBERReducer extends Reducer<Text, Text, Text, Text>
+    {
+                private Text resultText = new Text();
+​
+                public void reduce(Text key, Iterable<Text> values, Context context ) throws IOException, InterruptedException
+                {
+                    int vehicles = 0;
+                    int trips = 0;
+                    for (Text val : values) {
+			String[] tav = val.toString().split(",");		
+			trips += Integer.parseInt(tav[0]);
+                     	vehicles += Integer.parseInt(tav[1]);
+                     }
+                    String result = trips + "," + vehicles;
+                    resultText.set(result);
                     context.write(key, resultText);
-		}
 	}
-​
-	public static class UBERReducer extends Reducer<Text, Text, Text, Text>
-	{
-		private Text resultText = new Text();
-​
-		public void reduce(Text key, Iterable<Text> values, Context context ) throws IOException, InterruptedException
-		{
-            		int vehicles = 0;
-                    	int trips = 0;
-            		for (Text val : values) {
-                		String[] tav = val.toString().split(",");
-                        	trips += Integer.parseInt(tav[0]);
-                        	vehicles += Integer.parseInt(tav[1]);
-            		}
-                    	String result = trips + ",", vehicles;
-            		resultText.set(result);
-            		context.write(key, resultText);
-		}
-	}
+    }
 
     public static void main(String[] args) throws Exception
 	{
