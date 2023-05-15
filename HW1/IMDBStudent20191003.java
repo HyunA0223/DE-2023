@@ -63,11 +63,9 @@ public class IMDBStudent20191003 {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 ​
-		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(IntWritableOutputFormat.class);
-​
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		FileSystem.get(job.getConfiguration()).delete( new Path(args[1]), true);
         
 		job.waitForCompletion(true);
 	}
