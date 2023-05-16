@@ -17,7 +17,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 public class UBERStudent20191003 
 {
-	public static class UBERMapper20191003 extends Mapper<Object, Text, Text, Text>
+	public static class UBERMapper extends Mapper<Object, Text, Text, Text>
 	{
 		private Text key_word = new Text();
 		private Text value_word = new Text();
@@ -28,8 +28,8 @@ public class UBERStudent20191003
 			while (itr.hasMoreTokens()) {
 				String base_number = itr.nextToken();
 				String inputDate = itr.nextToken();	
+				DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 				
-				DateFormat df = new SimpleDateFormat("MM/dd/yyyy");		
 				Date date = new Date();
 				try{
 					date = df.parse(inputDate);
@@ -41,10 +41,10 @@ public class UBERStudent20191003
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(date);
 				
-				String week_num = Integer.toString(cal.get(Calendar.DAY_OF_WEEK) - 1);											
+				String week_num = Integer.toString(cal.get(Calendar.DAY_OF_WEEK) -1);		
 				String active_vehicles = itr.nextToken().trim();
-				String trips = itr.nextToken().trim();			
-				
+				String trips = itr.nextToken().trim();				
+					
 				key_word.set(base_number + "," + week_num);
 				value_word.set(trips + "," + active_vehicles);
 				
@@ -53,7 +53,7 @@ public class UBERStudent20191003
 		}
 	}
 
-	public static class UBERReducer20191003 extends Reducer<Text, Text, Text, Text> 
+	public static class UBERReducer extends Reducer<Text, Text, Text, Text> 
 	{
 		private String [] weeks = {"SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"};
 		private Text new_key = new Text();
@@ -65,18 +65,17 @@ public class UBERStudent20191003
 			int sum_active_vehicles = 0;
 		
 			StringTokenizer itr_key = new StringTokenizer(key.toString(), ",");
-			while (itr_key.hasMoreTokens())
-			{
+			while (itr_key.hasMoreTokens())	{
 				String base_number = itr_key.nextToken();
 				int weeks_num = Integer.parseInt(itr_key.nextToken().trim());
-			
 				String week = weeks[weeks_num];
 				new_key.set(base_number + "," + week);
 			}
 			
 			for (Text val : values) {
 				StringTokenizer itr = new StringTokenizer(val.toString(), ",");
-				while (itr.hasMoreTokens()) 
+				while (itr.hasMoreTokens())
+				{
 					
 					int trips = Integer.parseInt(itr.nextToken().trim());
 					int active_vehicles = Integer.parseInt(itr.nextToken().trim());
@@ -86,7 +85,8 @@ public class UBERStudent20191003
 				}				
 			}
 			
-			String sum = Integer.toString(sum_trips) + "," + Integer.toString(sum_active_vehicles);
+			String sum = Integer.toString(sum_trips) + "," 
+				+ Integer.toString(sum_active_vehicles);
 						
 			result.set(sum);
 			context.write(new_key, result);
@@ -96,20 +96,26 @@ public class UBERStudent20191003
 	public static void main(String[] args) throws Exception 
 	{
 		Configuration conf = new Configuration();
-		Job job = new Job(conf, "uberstudent20191003");	
+		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+		if (otherArgs.length != 2) 
+		{
+			System.err.println("Usage: UBER <in> <out>");
+			System.exit(2);
+		}
+		Job job = new Job(conf, "IMDb");	
 		job.setJarByClass(UBERStudent20191003.class);
 		
-		job.setMapperClass(UBERMapper20191003.class);
-		job.setCombinerClass(UBERReducer20191003.class);
-		job.setReducerClass(UBERReducer20191003.class);
+		job.setMapperClass(UBERMapper.class);
+		job.setReducerClass(UBERReducer.class);
 		
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		
-		FileInputFormat.addInputPath(job, new Path(args[0]));
-		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+		FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
 		
-		FileSystem.get(job.getConfiguration()).delete( new Path(args[1]), true);
-		job.waitForCompletion(true);
+		FileSystem.get(job.getConfiguration()).delete( new Path(otherArgs[1]), true);
+		
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 }
