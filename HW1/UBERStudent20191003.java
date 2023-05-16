@@ -15,22 +15,21 @@ import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.lib.output.*;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class UBERStudent20191003
+public class UBERStudent20191003 
 {
-
 	public static class UBERMapper20191003 extends Mapper<Object, Text, Text, Text>
 	{
-		private Text keyWord = new Text();
-		private Text valueWord = new Text();
+		private Text key_word = new Text();
+		private Text value_word = new Text();
 
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException 
 		{
 			StringTokenizer itr = new StringTokenizer(value.toString(), ",");
 			while (itr.hasMoreTokens()) {
-				String bNumber = itr.nextToken();
+				String base_number = itr.nextToken();
 				String inputDate = itr.nextToken();	
 				
-				DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+				DateFormat df = new SimpleDateFormat("MM/dd/yyyy");		
 				Date date = new Date();
 				try{
 					date = df.parse(inputDate);
@@ -42,14 +41,14 @@ public class UBERStudent20191003
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(date);
 				
-				String wNumber = Integer.toString(cal.get(Calendar.DAY_OF_WEEK) -1);						
-				String activeVehicles = itr.nextToken().trim();
-				String trips = itr.nextToken().trim();				
-						
-				keyWord.set(bNumber + "," + wNumber);
-				value_word.set(trips + "," + activeVehicles);
+				String week_num = Integer.toString(cal.get(Calendar.DAY_OF_WEEK) - 1);											
+				String active_vehicles = itr.nextToken().trim();
+				String trips = itr.nextToken().trim();			
 				
-				context.write(keyWord, valueWord);				
+				key_word.set(base_number + "," + week_num);
+				value_word.set(trips + "," + active_vehicles);
+				
+				context.write(key_word, value_word);				
 			}
 		}
 	}
@@ -57,39 +56,40 @@ public class UBERStudent20191003
 	public static class UBERReducer20191003 extends Reducer<Text, Text, Text, Text> 
 	{
 		private String [] weeks = {"SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"};
-		private Text newKey = new Text();
-		private Text resultText = new Text();
+		private Text new_key = new Text();
+		private Text result = new Text();
 
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException 
 		{
-			int sumTrips = 0;
-			int sumVehicles = 0;
+			int sum_trips = 0;
+			int sum_active_vehicles = 0;
+		
+			StringTokenizer itr_key = new StringTokenizer(key.toString(), ",");
+			while (itr_key.hasMoreTokens())
+			{
+				String base_number = itr_key.nextToken();
+				int weeks_num = Integer.parseInt(itr_key.nextToken().trim());
 			
-			StringTokenizer itrKey = new StringTokenizer(key.toString(), ",");
-			while (itrKey.hasMoreTokens()) {
-				String bNumber = itrKey.nextToken();
-				int wNumber = Integer.parseInt(itrKey.nextToken().trim());
-			
-				String week = weeks[wNumber];
-				newKey.set(bNumber + "," + week);
+				String week = weeks[weeks_num];
+				new_key.set(base_number + "," + week);
 			}
 			
 			for (Text val : values) {
 				StringTokenizer itr = new StringTokenizer(val.toString(), ",");
-				while (itr.hasMoreTokens()) {
-					int trips = Integer.parseInt(itr.nextToken().trim());
-					int activeVehicles = Integer.parseInt(itr.nextToken().trim());
+				while (itr.hasMoreTokens()) 
 					
-					sumTrips += trips;
-					sumVehicles += activeVehicles;			
+					int trips = Integer.parseInt(itr.nextToken().trim());
+					int active_vehicles = Integer.parseInt(itr.nextToken().trim());
+					
+					sum_trips += trips;
+					sum_active_vehicles += active_vehicles;			
 				}				
 			}
 			
-			String sum = Integer.toString(sumTrips) + "," 
-				+ Integer.toString(sumVehicles);
+			String sum = Integer.toString(sum_trips) + "," + Integer.toString(sum_active_vehicles);
 						
-			resultText.set(sum);
-			context.write(newKey, resultText);
+			result.set(sum);
+			context.write(new_key, result);
 		}
 	}
 
