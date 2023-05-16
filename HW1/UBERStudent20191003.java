@@ -97,9 +97,10 @@ public class UBERStudent20191003
 	{
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, "uberstudent20191003");	
-		
 		job.setJarByClass(UBERStudent20191003.class);
+		
 		job.setMapperClass(UBERMapper20191003.class);
+		job.setCombinerClass(UBERReducer20191003.class);
 		job.setReducerClass(UBERReducer20191003.class);
 		
 		job.setOutputKeyClass(Text.class);
