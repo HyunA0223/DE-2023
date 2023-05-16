@@ -14,16 +14,17 @@ public class IMDBStudent20191003
 {
 	public static class IMDBStudent20191003Mapper extends Mapper<Object, Text, Text, IntWritable>{
 		private final static IntWritable one = new IntWritable(1);
-		private Text mapResult = new Text();
+		private Text word = new Text();
 		
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			String[] line = value.toString().split("::");
-			int len = line.length;
-			StringTokenizer str = new StringTokenizer(line[len - 1], "|");
+			String s = value.toString();
+			String[] token = s.split("::");
+			int len = token.length;
+			StringTokenizer itr = new StringTokenizer(token[len-1], "|");
 			
-			while (str.hasMoreTokens()) {
-				mapResult.set(str.nextToken());
-				context.write(mapResult, one);
+			while (itr.hasMoreTokens()) {
+				word.set(itr.nextToken());
+				context.write(word, one);
 			}
 		}	
 	}
@@ -44,19 +45,15 @@ public class IMDBStudent20191003
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, "imdbstudent20191003");
-		
 		job.setJarByClass(IMDBStudent20191003.class);
 		job.setMapperClass(IMDBStudent20191003Mapper.class);
 		job.setCombinerClass(IMDBStudent20191003Reducer.class);
 		job.setReducerClass(IMDBStudent20191003Reducer.class);
-		
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
-		
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 		FileSystem.get(job.getConfiguration()).delete( new Path(args[1]), true);
 		job.waitForCompletion(true);
 	}
 }
-​
