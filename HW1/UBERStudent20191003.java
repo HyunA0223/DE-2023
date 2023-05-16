@@ -72,7 +72,7 @@ public class UBERStudent20191003 {
     public static void main(String[] args) throws Exception
 	{
 		Configuration conf = new Configuration();
-		Job job = new Job(conf, "UBERStudent20191003");
+		Job job = new Job(conf, "uberstudent20191003");
 ​
 		job.setJarByClass(UBERStudent20191003.class);
 		job.setMapperClass(UBERStudent20191003Mapper.class);
