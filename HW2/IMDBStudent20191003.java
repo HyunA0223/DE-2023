@@ -34,31 +34,31 @@ class DoubleString implements WritableComparable {
   String joinKey = new String();
   String tableName = new String();
 
-public DoubleString() {}
-public DoubleString( String _joinKey, String _tableName ) {
-	joinKey = _joinKey;
-	tableName = _tableName;
-}
-public void readFields(DataInput in) throws IOException {
-	joinKey = in.readUTF();
-	tableName = in.readUTF();
-}
-public void write(DataOutput out) throws IOException {
-	out.writeUTF(joinKey);
-	out.writeUTF(tableName);
-}
+	public DoubleString() {}
+	public DoubleString( String _joinKey, String _tableName ) {
+		joinKey = _joinKey;
+		tableName = _tableName;
+	}
+	public void readFields(DataInput in) throws IOException {
+		joinKey = in.readUTF();
+		tableName = in.readUTF();
+	}
+	public void write(DataOutput out) throws IOException {
+		out.writeUTF(joinKey);
+		out.writeUTF(tableName);
+	}
 	
-public int compareTo(Object o1) {
-	DoubleString o = (DoubleString) o1;
-	int ret = joinKey.compareTo(o.joinKey);
-	if (ret!=0) {
-    return ret;
-  }
-	return tableName.compareTo(o.tableName);	// sorting
-}
-public String toString() { 
-	return joinKey + " " + tableName; 
-}
+	public int compareTo(Object o1) {
+		DoubleString o = (DoubleString) o1;
+		int ret = joinKey.compareTo(o.joinKey);
+		if (ret!=0) {
+   			return ret;
+ 		}
+		return tableName.compareTo(o.tableName);	// sorting
+	}
+	public String toString() { 
+		return joinKey + " " + tableName; 
+	}
 
 }
 
