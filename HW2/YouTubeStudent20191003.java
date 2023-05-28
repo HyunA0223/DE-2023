@@ -1,134 +1,115 @@
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+
 import org.apache.hadoop.conf.*;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.*;
-import org.apache.hadoop.mapred.lib.*;
 import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.lib.output.*;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-class Video {
-	public String video_genre;
-	public double average;
-	
-	public Video(String video_genre, double average) {
-		this.video_genre = video_genre;
-		this.average = average;
-	}
-	
-	public String getGenre() {
-		return this.video_genre;
-	}
-	
-	public double getAverage() {
-		return this.average;
-	}
-}
-
 public class YouTubeStudent20191003 {
-	public static class AverageComparator implements Comparator<Video> {
-		public int compare(Video x, Video y) {
-			if ( x.average > y.average ) return 1;
-			if ( x.average < y.average ) return -1;
-			return 0;
-		}
-	}
-	
-	public static void insertVideo(PriorityQueue q, String video_genre, double average, int topK) {
-		Video video_head = (Video) q.peek();
-		if ( q.size() < topK || video_head.average < average ) {
-			Video video = new Video(video_genre, average);
-			q.add(video);
-			
-			if(q.size() > topK) q.remove();
-		}
-		
-	}
-	
-	public static class YoutubeMapper extends Mapper<Object, Text, Text, DoubleWritable> {
-		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			StringTokenizer itr = new StringTokenizer(value.toString(), "|");
-			String video_genre = "";
-			String video_rate = "";
-			
-			int i = 0;
-			while(itr.hasMoreTokens()) {
-				video_rate = itr.nextToken();
-				if(i == 3) {
-					video_genre = video_rate;
-				}
-				
-				i++;
-			}
-			
-			System.out.println("Genre : " + video_genre + " Rate : " + video_rate);
-			
-			context.write(new Text(video_genre), new DoubleWritable(Double.valueOf(video_rate)));
-		}
-	}
-	
-	public static class YoutubeReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
-		private PriorityQueue<Video> queue;
-		private Comparator<Video> comp = new AverageComparator();
-		private int topK;
-		public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
-		       	throws IOException, InterruptedException {
-			double rate_total = 0;
-			int size = 0;
-			
-			for(DoubleWritable val : values) {
-				rate_total += val.get();
-				size++;
-			}
-			
-			double average = rate_total / size;
-			
-			insertVideo(queue, key.toString(), average, topK);
-		}
-		
-		protected void setup(Context context) throws IOException, InterruptedException {
-			Configuration conf = context.getConfiguration();
-			topK = conf.getInt("topK", -1);
-			queue = new PriorityQueue<Video>( topK , comp);
-		}
-		
-		protected void cleanup(Context context) throws IOException, InterruptedException {
-			while(queue.size() != 0) {
-				Video video = (Video) queue.remove();
-				context.write(new Text(video.getGenre()), new DoubleWritable(video.getAverage()));
-			}
-		}
-	}
-	
-	public static void main(String[] args) throws Exception {
-		Configuration conf = new Configuration();
-		
-		String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-		if (otherArgs.length != 3) {
-			System.err.println("Usage: YouTubeStudent20191003 <in> <out> <k>");
-			System.exit(2);
-		}
-		conf.setInt("topK", Integer.valueOf(otherArgs[2]));
-		Job job = new Job(conf, "YouTubeStudent20191003");
-		job.setJarByClass(YouTubeStudent20191003.class);
-		job.setMapperClass(YoutubeMapper.class);
-		job.setReducerClass(YoutubeReducer.class);
-		job.setNumReduceTasks(1);	
-		
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(DoubleWritable.class);
-		
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(DoubleWritable.class);
 
-		FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-		FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
-		FileSystem.get(job.getConfiguration()).delete( new Path(otherArgs[1]), true);
-		System.exit(job.waitForCompletion(true) ? 0 : 1);
-	}
+    public static class Youtube {
+        public String category;
+        public double rating;
+
+        public Youtube(String category, double rating) {
+            this.category = category;
+            this.rating = rating;
+        }
+
+        public String getCategory() { return this.category; }
+        public double getRating() { return this.rating; }
+    }
+
+    public static class YoutubeComparator implements Comparator<Youtube> {
+        @Override
+        public int compare(Youtube o1, Youtube o2) {
+            if (o1.rating > o2.rating) {
+                return 1;
+            } else if (o1.rating == o2.rating) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public static void insertYoutube(PriorityQueue q, String category, double rating, int topK) {
+        Youtube youtube_head = (Youtube) q.peek();
+        if (q.size() < topK || youtube_head.rating < rating) {
+            Youtube youtube = new Youtube(category, rating);
+            q.add(youtube);
+            if(q.size() > topK) q.remove();
+        }
+    }
+
+    public static class YoutubeMapper extends Mapper<Object, Text, Text, DoubleWritable> {
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] data = value.toString().split("\\|");
+            String category = data[3]; 
+            double rating = Double.parseDouble(data[6]); 
+
+            context.write(new Text(category), new DoubleWritable(rating));
+        }
+    }
+
+    public static class YoutubeReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+        private PriorityQueue<Youtube> queue;
+        private Comparator<Youtube> comp = new YoutubeComparator();
+        private int topK;
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+            double sum = 0;
+            int count = 0;
+		
+            for (DoubleWritable val : values) {
+                sum += val.get();
+                count++;
+            }
+            double average = sum / (double) count;
+            insertYoutube(queue, key.toString(), average, topK);
+        }
+
+        protected void setup(Context context) throws IOException, InterruptedException {
+            Configuration conf = context.getConfiguration();
+            topK = conf.getInt("topK", -1);
+            queue = new PriorityQueue<Youtube>(topK, comp);
+        }
+
+        protected void cleanup(Context context) throws IOException, InterruptedException {
+            while( queue.size() != 0 ) {
+                Youtube youtube = (Youtube) queue.remove();
+                context.write( new Text( youtube.getCategory() ), new DoubleWritable(youtube.getRating()));
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
+        if (otherArgs.length != 3) {
+            System.err.println("Usage: YouTubeStudent20191003 <in> <out>");
+            System.exit(2);
+        }
+
+        conf.setInt("topK", Integer.parseInt(otherArgs[2]));
+        Job job = new Job(conf, "YouTubeStudent20191003");
+        job.setJarByClass(YouTubeStudent20191003.class);
+        job.setMapperClass(YoutubeMapper.class);
+        job.setReducerClass(YoutubeReducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
+
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
+
+        FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+        FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
+        FileSystem.get(job.getConfiguration()).delete( new Path(otherArgs[1]), true);
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+
 }
